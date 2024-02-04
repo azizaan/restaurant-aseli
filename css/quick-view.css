@@ -1,0 +1,72 @@
+.quick-view form {
+  max-width: 40rem;
+  padding: 2rem;
+  border: var(--border);
+  position: relative;
+  margin: 0 auto;
+}
+
+.quick-view form img {
+  height: 25rem;
+  width: 100%;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.quick-view form .cat {
+  font-size: 1.8rem;
+  color: var(--light-color);
+}
+
+.quick-view form .cat:hover {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.quick-view form .name {
+  font-size: 2rem;
+  margin: 0.5rem 0;
+}
+
+.quick-view form .flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.quick-view form .flex .price {
+  font-size: 2.5rem;
+  color: var(--black);
+}
+
+.quick-view form .flex .price span {
+  font-size: 2rem;
+  color: var(--light-color);
+}
+
+.quick-view form .flex .qty {
+  border: var(--border);
+  padding: 1rem;
+  font-size: 1.8rem;
+  color: var(--black);
+}
+
+.quick-view form .cart-btn {
+  width: 100%;
+  padding: 1rem 3rem;
+  text-align: center;
+  border: var(--border);
+  font-size: 2rem;
+  color: var(--black);
+  cursor: pointer;
+  text-transform: capitalize;
+  background: none;
+  margin-top: 1rem;
+}
+
+.quick-view form .cart-btn:hover {
+  background-color: var(--black);
+  color: var(--white);
+}
