@@ -1,23 +1,28 @@
 <?php
 require('fpdf/fpdf.php');
 
-class StrukPembayaran extends FPDF {
+class StrukPembayaran extends FPDF
+{
     private $totalHeight = 0;
-    private $isNewPage = true; 
+    private $isNewPage = true;
 
-    function Header() {
+    function Header()
+    {
         // Tidak perlu header pada struk thermal
     }
 
-    function Footer() {
+    function Footer()
+    {
         // Tidak perlu footer pada struk thermal
     }
 
-    public function getTotalHeight() {
+    public function getTotalHeight()
+    {
         return $this->totalHeight;
     }
 
-    function TambahBaris($text, $align = 'L', $lineBreak = true, $fontSize = 8) {
+    function TambahBaris($text, $align = 'L', $lineBreak = true, $fontSize = 8)
+    {
         $this->SetFont('Arial', '', $fontSize);
 
         if ($this->isNewPage) {
@@ -32,7 +37,8 @@ class StrukPembayaran extends FPDF {
         $this->totalHeight += ($lineBreak) ? 8 : 6;
     }
 
-    function GarisPutus() {
+    function GarisPutus()
+    {
         $this->SetLineWidth(0.3);
         $this->SetDrawColor(0, 0, 0);
 
@@ -46,7 +52,8 @@ class StrukPembayaran extends FPDF {
         $this->totalHeight += 2;
     }
 
-    function AddPage($orientation = '', $size = '', $rotation = 0) {
+    function AddPage($orientation = '', $size = '', $rotation = 0)
+    {
         parent::AddPage($orientation, $size, $rotation);
         $this->totalHeight = 0;
         $this->isNewPage = true;
@@ -58,6 +65,7 @@ $waktuOrder = $_GET['placed_on'];
 $total_price = $_GET['total_price'];
 $total_products = $_GET['total_products'];
 $method = $_GET['method'];
+$kasir_id = $_GET['kasir_id'];
 
 if ($total_products === null && json_last_error() !== JSON_ERROR_NONE) {
     die('Gagal mendapatkan data total_products.');
@@ -72,15 +80,22 @@ $pdf->TambahBaris('Kec. Wonorejo  ', 'C', false, 8);
 $pdf->TambahBaris('082143618116', 'C', false, 8);
 $pdf->GarisPutus();
 
+// ...
+
 $pdf->SetFont('Arial', '', 7);
 $pdf->TambahBaris('ID Transaksi: ' . $id, 'L', true, 7);
-$pdf->TambahBaris('Waktu Order: ' . $waktuOrder, 'L', true, 7);
+$pdf->TambahBaris('Cashier ID: ' . $kasir_id, 'L', true, 7);
+$pdf->TambahBaris('Waktu Order: ' . $waktuOrder, 'L', true, 7); // Adjusted the Ln value
+
 $pdf->GarisPutus();
+
+// ...
+
 
 $pdf->SetFont('Arial', 'B', 7);
 $pdf->Cell(17, 7, 'Nama Menu', 0);
-$pdf->Cell(10, 7, 'Qty', 0);
-$pdf->Cell(15, 7, 'Total', 0);
+$pdf->Cell(15, 7, 'Total', 0); // Adjusted cell width for Total
+$pdf->Cell(15, 7, 'Qty', 0);
 $pdf->Ln(8);
 
 $pdf->SetFont('Arial', '', 8);
@@ -93,19 +108,28 @@ foreach ($items as $item) {
 
     if ($match) {
         $menuText = $matches[1];
-        $qtyText = $matches[2] . 'x';
-        $totalText = $matches[3];
+        $qtyText = 'Rp ' . $matches[2]; // Menambahkan 'Rp' di depan $qtyText
+        $totalText = $matches[3]; // Menambahkan 'Rp' di depan $totalText
 
-        $numLines = max(ceil($pdf->GetStringWidth($menuText) / 30),
-            ceil($pdf->GetStringWidth($qtyText) / 20),
-            ceil($pdf->GetStringWidth($totalText) / 20));
+        $numLines = max(
+            ceil($pdf->GetStringWidth($menuText) / 30),
+            ceil($pdf->GetStringWidth($totalText) / 20),
+            ceil($pdf->GetStringWidth($qtyText) / 20)
+        );
 
         if ($numLines > 1) {
             $fontSize = 6;
-            $pdf->TambahBaris($menuText, 'L', false, $fontSize);
+            $pdf->Cell(17, 6, $menuText, 0);
+            $pdf->Cell(15, 6, '', 0); // Placeholder for Qty
+            $pdf->Cell(15, 6, '', 0); // Placeholder for Total
+            $pdf->Ln(6);
+            $pdf->Cell(17, 6, '', 0); // Empty cell to align with Qty
+            $pdf->Cell(15, 6, $qtyText, 0); // Qty
+            $pdf->Cell(15, 6, $totalText, 0); // Total
+            $pdf->Ln(6);
         } else {
             $pdf->Cell(17, 6, $menuText, 0);
-            $pdf->Cell(10, 6, $qtyText, 0);
+            $pdf->Cell(15, 6, $qtyText, 0);
             $pdf->Cell(15, 6, $totalText, 0);
             $pdf->Ln(6);
         }
@@ -116,10 +140,11 @@ foreach ($items as $item) {
     }
 }
 
+
 $pdf->GarisPutus();
 $pdf->SetFont('Arial', 'B', 8);
 $pdf->TambahBaris('Ringkasan Pembayaran', 'L');
-$pdf->TambahBaris('payment : '. $method, 'L');
+$pdf->TambahBaris('payment : ' . $method, 'L');
 $pdf->GarisPutus();
 
 $pdf->SetFont('Arial', '', 7);
@@ -132,4 +157,3 @@ $pdf->TambahBaris('Terima Kasih', 'C', false, 8);
 
 ob_clean();
 $pdf->Output('I');
-?>

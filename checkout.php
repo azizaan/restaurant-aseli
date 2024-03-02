@@ -46,7 +46,6 @@ if (isset($_SESSION['user_id'])) {
 }
 
 if (isset($_POST['submit'])) {
-
    $name = $_POST['name'];
    $name = filter_var($name, FILTER_SANITIZE_STRING);
    $number = $_POST['number'];
@@ -64,27 +63,56 @@ if (isset($_POST['submit'])) {
    $check_cart->execute([$user_id]);
 
    if ($check_cart->rowCount() > 0) {
-
       if ($address == '') {
          $message[] = 'please add your address!';
       } else {
          // Generate a unique order ID
          $order_id = getNoMaster('id', 'orders', 'ORD');
 
-         $insert_order = $conn->prepare("INSERT INTO `orders`(id, user_id, name, number, email, method, address, total_products, total_price) VALUES(?,?,?,?,?,?,?,?,?)");
+         // Check if the selected payment method is 'saldo'
+         if ($method == 'saldo') {
+            // Get user's current saldo
+            $user_saldo_query = $conn->prepare("SELECT saldo FROM users WHERE id = ?");
+            $user_saldo_query->execute([$user_id]);
+            $user_saldo = $user_saldo_query->fetchColumn();
 
-         // Use $order_id in the execute statement
-         $insert_order->execute([$order_id, $user_id, $name, $number, $email, $method, $address, $total_products, $total_price]);
+            // Check if user's saldo is sufficient
+            if ($user_saldo >= $total_price) {
+               // Deduct total price from user's saldo
+               $new_saldo = $user_saldo - $total_price;
+               $update_saldo_query = $conn->prepare("UPDATE users SET saldo = ? WHERE id = ?");
+               $update_saldo_query->execute([$new_saldo, $user_id]);
 
-         $delete_cart = $conn->prepare("DELETE FROM `cart` WHERE user_id = ?");
-         $delete_cart->execute([$user_id]);
+               // Proceed with order placement
+               $insert_order = $conn->prepare("INSERT INTO `orders`(id, user_id, name, number, email, method, address, total_products, total_price) VALUES(?,?,?,?,?,?,?,?,?)");
+               $insert_order->execute([$order_id, $user_id, $name, $number, $email, $method, $address, $total_products, $total_price]);
 
-         $message[] = 'order placed successfully!';
+               // Clear user's cart
+               $delete_cart = $conn->prepare("DELETE FROM `cart` WHERE user_id = ?");
+               $delete_cart->execute([$user_id]);
+
+               $message[] = 'Order placed successfully!';
+            } else {
+               // Insufficient saldo, display error message
+               $message[] = 'Insufficient saldo. Please top up your saldo.';
+            }
+         } else {
+            // Payment method other than 'saldo', proceed with regular order placement
+            $insert_order = $conn->prepare("INSERT INTO `orders`(id, user_id, name, number, email, method, address, total_products, total_price) VALUES(?,?,?,?,?,?,?,?,?)");
+            $insert_order->execute([$order_id, $user_id, $name, $number, $email, $method, $address, $total_products, $total_price]);
+
+            // Clear user's cart
+            $delete_cart = $conn->prepare("DELETE FROM `cart` WHERE user_id = ?");
+            $delete_cart->execute([$user_id]);
+
+            $message[] = 'Order placed successfully!';
+         }
       }
    } else {
-      $message[] = 'your cart is empty';
+      $message[] = 'Your cart is empty';
    }
 }
+
 
 ?>
 
@@ -172,7 +200,15 @@ if (isset($_POST['submit'])) {
             <p><i class="fas fa-user"></i><span><?= $fetch_profile['name'] ?></span></p>
             <p><i class="fas fa-phone"></i><span><?= $fetch_profile['number'] ?></span></p>
             <p><i class="fas fa-envelope"></i><span><?= $fetch_profile['email'] ?></span></p>
+            <!-- Tambahkan tampilan saldo di sini -->
+            <?php if ($fetch_profile['saldo'] !== null) : ?>
+               <p><i class="fas fa-wallet"></i><span>Saldo Anda: Rp <?= $fetch_profile['saldo'] ?></span></p>
+            <?php else : ?>
+               <p><i class="fas fa-wallet"></i><span>Saldo Anda: Rp 0</span></p>
+            <?php endif; ?>
             <a href="update_profile.php" class="btn">update info</a>
+            <!-- Tombol Top Up Saldo -->
+            <a href="saldo.php" class="btn">Top Up Saldo</a>
             <h3>delivery address</h3>
             <p><i class="fas fa-map-marker-alt"></i><span><?php if ($fetch_profile['address'] == '') {
                                                                echo 'please enter your address';
@@ -184,6 +220,7 @@ if (isset($_POST['submit'])) {
             <select name="method" class="box" required>
                <option value="" disabled selected>select payment method --</option>
                <option value="cash on delivery">cash on delivery</option>
+               <option value="saldo">gunakan saldo</option> <!-- Tambahkan opsi penggunaan saldo -->
                <option value="dana">dana</option>
                <option value="qris">qris</option>
                <option value="shoppepay">shoppepay</option>
@@ -199,19 +236,33 @@ if (isset($_POST['submit'])) {
 
    </section>
 
-
-
-
-
-
-
-
-
    <!-- footer section starts  -->
    <?php include 'components/footer.php'; ?>
    <!-- footer section ends -->
 
+   <script>
+      document.addEventListener('DOMContentLoaded', function() {
+         var paymentMethodSelect = document.querySelector('select[name="method"]');
+         var messageContainer = document.querySelector('.message-container');
 
+         paymentMethodSelect.addEventListener('change', function() {
+            var selectedOption = paymentMethodSelect.value;
+
+            if (selectedOption === 'saldo') {
+               // Tambahkan logika untuk memberikan alert jika saldo tidak mencukupi saat checkout
+               var saldo = <?= $fetch_profile['saldo'] ?>;
+               var total_price = <?= $grand_total ?>;
+               if (saldo < total_price) {
+                  messageContainer.innerHTML = 'Maaf, saldo Anda tidak mencukupi untuk melakukan pembayaran!';
+               } else {
+                  messageContainer.innerHTML = '';
+               }
+            } else {
+               messageContainer.innerHTML = '';
+            }
+         });
+      });
+   </script>
 
    <script>
       document.addEventListener('DOMContentLoaded', function() {

@@ -103,10 +103,11 @@ if (!isset($admin_id)) {
 
          <!-- Nav Item - Charts -->
          <li class="nav-item">
-            <a class="nav-link" href="report.php">
+            <a class="nav-link" href="amount.php">
                <i class="fas fa-fw fa-file-alt"></i>
-               <span>Report</span></a>
+               <span>Amount</span></a>
          </li>
+
 
 
 

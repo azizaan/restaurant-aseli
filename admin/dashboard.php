@@ -139,7 +139,7 @@ function getDailyChartData($conn)
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Nav Item - Charts -->
+            <!-- Nav Item - Pembayaran -->
             <li class="nav-item">
                 <a class="nav-link" href="pembayaran.php">
                     <i class="fas fa-fw fa-money-check"></i>
@@ -147,11 +147,18 @@ function getDailyChartData($conn)
             </li>
             <hr class="sidebar-divider">
 
-            <!-- Nav Item - Charts -->
+            <!-- Nav Item - Amount/Top up user -->
             <li class="nav-item">
-                <a class="nav-link" href="report.php">
+                <a class="nav-link" href="amount.php">
                     <i class="fas fa-fw fa-file-alt"></i>
-                    <span>Report</span></a>
+                    <span>Amount</span></a>
+            </li>
+
+            <!-- Nav Item - laporan -->
+            <li class="nav-item">
+                <a class="nav-link" href="laporan.php">
+                    <i class="fas fa-fw fa-file-alt"></i>
+                    <span>Laporan</span></a>
             </li>
 
 
@@ -274,18 +281,12 @@ function getDailyChartData($conn)
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                                 Total Pending</div>
                                             <?php
-                                            $total_pendings = 0;
-                                            $select_pendings = $conn->prepare("SELECT * FROM `orders` WHERE payment_status = ?");
+                                            $select_pendings = $conn->prepare("SELECT COUNT(*) AS total_pendings FROM `orders` WHERE payment_status = ?");
                                             $select_pendings->execute(['pending']);
-                                            while ($fetch_pendings = $select_pendings->fetch(PDO::FETCH_ASSOC)) {
-                                                $total_pendings += $fetch_pendings['total_price'];
-                                            }
-
-                                            // Format the total_pendings as IDR
-                                            $formatted_total_pendings = "Rp " . number_format($total_pendings, 0, ',', '.');
-
+                                            $total_pendings = $select_pendings->fetch(PDO::FETCH_ASSOC)['total_pendings'];
                                             ?>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $formatted_total_pendings; ?></div>
+
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $total_pendings; ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-hourglass-half fa-2x text-gray-300"></i>
@@ -304,16 +305,12 @@ function getDailyChartData($conn)
                                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                                 Total Completes</div>
                                             <?php
-                                            $total_completes = 0;
-                                            $select_completes = $conn->prepare("SELECT * FROM `orders` WHERE payment_status = ?");
+                                            $select_completes = $conn->prepare("SELECT COUNT(*) AS total_completes FROM `orders` WHERE payment_status = ?");
                                             $select_completes->execute(['completed']);
-                                            while ($fetch_completes = $select_completes->fetch(PDO::FETCH_ASSOC)) {
-                                                $total_completes += $fetch_completes['total_price'];
-                                            }
-
-                                            $formatted_total_completes = "Rp " . number_format($total_completes, 0, ',', '.');
+                                            $total_completes = $select_completes->fetch(PDO::FETCH_ASSOC)['total_completes'];
                                             ?>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $formatted_total_completes; ?></div>
+
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $total_completes; ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-check-circle fa-2x text-gray-300"></i>
@@ -353,21 +350,23 @@ function getDailyChartData($conn)
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Product added</div>
+                                                Cancelled Orders</div>
                                             <?php
-                                            $select_products = $conn->prepare("SELECT * FROM `products`");
-                                            $select_products->execute();
-                                            $numbers_of_products = $select_products->rowCount();
+                                            $select_cancel = $conn->prepare("SELECT COUNT(*) AS total_cancel FROM `orders` WHERE payment_status = ?");
+                                            $select_cancel->execute(['cancel']);
+                                            $total_cancel = $select_cancel->fetch(PDO::FETCH_ASSOC)['total_cancel'];
                                             ?>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $numbers_of_products; ?></div>
+
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $total_cancel; ?></div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-plus-circle fa-2x text-gray-300"></i>
+                                            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                 </div>
@@ -441,7 +440,7 @@ function getDailyChartData($conn)
                 data: {
                     labels: dailyChartData.labels,
                     datasets: [{
-                        label: "Total Earnings",
+                        label: "Total Pendapatan",
                         backgroundColor: "rgba(78, 115, 223, 0.05)",
                         borderColor: "rgba(78, 115, 223, 1)",
                         pointRadius: 3,

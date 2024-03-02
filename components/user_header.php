@@ -32,7 +32,14 @@ if (isset($message)) {
         border-radius: 50%;
     }
 
+    
+
     .name {
+        font-size: 18px;
+        margin-top: 10px;
+    }
+
+    .saldo {
         font-size: 18px;
         margin-top: 10px;
     }
@@ -76,9 +83,10 @@ if (isset($message)) {
             if ($user_id) {
                 echo '<a href="orders.php">orders</a>';
                 echo '<a href="riwayat.php">riwayat</a>';
+                // echo '<a href="saldo.php">top up saldo</a>';
             }
             ?>
-            <a href="contact.php">contact</a>
+
         </nav>
 
         <div class="icons">
@@ -107,8 +115,21 @@ if (isset($message)) {
                     <img src="<?= $fetch_profile['profile_picture']; ?>" alt="" class="profile-picture">
                 </div>
                 <p class="name">Hi! <?= $fetch_profile['name']; ?></p>
+                <?php
+                // Cek apakah saldo null atau 0
+                if ($fetch_profile['saldo'] === null || $fetch_profile['saldo'] == 0 || $fetch_profile['saldo'] == '') {
+                ?>
+                    <p class="saldo">Saldo anda : Rp 0</p>
+                <?php
+                } else {
+                ?>
+                    <p class="saldo">Saldo anda : Rp <?= $fetch_profile['saldo']; ?></p>
+                <?php
+                }
+                ?>
                 <div class="flex">
                     <a href="profile.php" class="btn">profile</a>
+                    <!-- <a href="saldo.php" class="btn-saldo">Top up</a> -->
                     <a href="components/user_logout.php" onclick="return confirm('logout from this website?');" class="delete-btn">logout</a>
                 </div>
             <?php
@@ -121,6 +142,7 @@ if (isset($message)) {
             }
             ?>
         </div>
+
 
     </section>
 

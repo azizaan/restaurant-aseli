@@ -54,18 +54,30 @@ if (isset($_SESSION['user_id'])) {
             if ($user_id == '') {
                 echo '<p class="empty">Please login to see your orders</p>';
             } else {
-                $select_orders = $conn->prepare("SELECT * FROM `orders` WHERE user_id = ? ORDER BY placed_on DESC LIMIT 6");
+                $select_orders = $conn->prepare("SELECT * FROM `orders` WHERE user_id = ? ORDER BY placed_on DESC");
                 $select_orders->execute([$user_id]);
                 if ($select_orders->rowCount() > 0) {
                     while ($fetch_orders = $select_orders->fetch(PDO::FETCH_ASSOC)) {
                         $orderId = $fetch_orders['id'];
             ?>
-                        <div class="box" onclick="toggleDetails(<?= json_encode($orderId); ?>)" data-order-id="<?= $orderId; ?>">
-                            <div class="toggle-icon">+</div>
+                        <div class="box" data-order-id="<?= $orderId; ?>">
                             <p>Placed on: <span><?= $fetch_orders['placed_on']; ?></span></p>
                             <p>Total price: <span>Rp <?= $fetch_orders['total_price']; ?>/-</span></p>
-                            <p>Payment status: <span style="color:<?php echo ($fetch_orders['payment_status'] == 'pending') ? 'red' : 'green'; ?>"><?= $fetch_orders['payment_status']; ?></span></p>
-                            <div id="details<?= $orderId; ?>" class="details" style="display:none;">
+                            <p>Payment status:
+                                <span style="color:<?php
+                                                    if ($fetch_orders['payment_status'] == 'pending') {
+                                                        echo 'red';
+                                                    } elseif ($fetch_orders['payment_status'] == 'cancel') {
+                                                        echo 'red';
+                                                    } else {
+                                                        echo 'green';
+                                                    }
+                                                    ?>">
+                                    <?= $fetch_orders['payment_status']; ?>
+                                </span>
+                            </p>
+
+                            <div class="details">
                                 <p>Name: <span><?= $fetch_orders['name']; ?></span></p>
                                 <p>Email: <span><?= $fetch_orders['email']; ?></span></p>
                                 <p>Number: <span><?= $fetch_orders['number']; ?></span></p>
@@ -87,21 +99,6 @@ if (isset($_SESSION['user_id'])) {
     <!-- footer section starts  -->
     <?php include 'components/footer.php'; ?>
     <!-- footer section ends -->
-
-    <script>
-        function toggleDetails(orderId) {
-            var detailsElement = document.getElementById('details' + orderId);
-            var iconElement = document.querySelector('.box[data-order-id="' + orderId + '"] .toggle-icon');
-
-            if (detailsElement.style.display === 'none' || detailsElement.style.display === '') {
-                detailsElement.style.display = 'block';
-                iconElement.innerHTML = '-';
-            } else {
-                detailsElement.style.display = 'none';
-                iconElement.innerHTML = '+';
-            }
-        }
-    </script>
 
     <!-- custom js file link  -->
     <script src="js/script.js"></script>

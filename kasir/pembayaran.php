@@ -1,15 +1,14 @@
 <?php
-
 include '../components/connect.php';
 
 session_start();
 
-$admin_id = $_SESSION['admin_id'];
+$kasir_id = $_SESSION['kasir_id'];
 
-if (!isset($admin_id)) {
-    header('location:admin_login.php');
+if (!isset($kasir_id)) {
+    header('location: kasir_login.php');
+    exit();
 }
-
 
 ?>
 <!DOCTYPE html>
@@ -42,50 +41,27 @@ if (!isset($admin_id)) {
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="dashboard.php">
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="kasir_dashboard.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">Yum Yum</div>
+                <div class="sidebar-brand-text mx-3">YUM-YUM</div>
             </a>
 
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
 
-
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-users"></i>
-                    <span>Management Account</span>
-                </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Management Account</h6>
-                        <a class="collapse-item" href="users_accounts.php">Users</a>
-                        <a class="collapse-item" href="admin_accounts.php">Admin</a>
-                        <a class="collapse-item" href="kurir_accounts.php">Kurir</a>
-                        <a class="collapse-item" href="kasir_accounts.php">Kasir</a>
-                    </div>
-                </div>
+            <li class="nav-item ">
+                <a class="nav-link" href="kasir_dashboard.php">
+                    <i class="fas fa-fw fa-home"></i>
+                    <span>Dashboard</span></a>
             </li>
-
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Nav Item - Tables -->
-            <li class="nav-item">
-                <a class="nav-link" href="products.php">
-                    <i class="fas fa-fw fa-utensils"></i>
-                    <span>Menu</span></a>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
-            <!-- Nav Item - Charts -->
-            <li class="nav-item">
+            <li class="nav-item ">
                 <a class="nav-link" href="placed_orders.php">
                     <i class="fas fa-fw fa-shopping-basket"></i>
                     <span>Orders</span></a>
@@ -93,19 +69,11 @@ if (!isset($admin_id)) {
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Nav Item - Charts -->
+
             <li class="nav-item active">
                 <a class="nav-link" href="pembayaran.php">
                     <i class="fas fa-fw fa-money-check"></i>
                     <span>Pembayaran</span></a>
-            </li>
-            <hr class="sidebar-divider">
-
-            <!-- Nav Item - Charts -->
-            <li class="nav-item">
-                <a class="nav-link" href="amount.php">
-                    <i class="fas fa-fw fa-file-alt"></i>
-                    <span>Amount</span></a>
             </li>
 
 
@@ -167,12 +135,12 @@ if (!isset($admin_id)) {
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <?php
-                                $select_profile = $conn->prepare("SELECT * FROM admin WHERE id = ?");
-                                $select_profile->execute([$admin_id]);
+                                $select_profile = $conn->prepare("SELECT * FROM kasir WHERE kasir_id = ?");
+                                $select_profile->execute([$kasir_id]);
 
                                 if ($select_profile->rowCount() > 0) {
                                     $fetch_profile = $select_profile->fetch(PDO::FETCH_ASSOC);
-                                    echo '<span class="mr-2 d-none d-lg-inline text-gray-600 small">' . $fetch_profile['name'] . '</span>';
+                                    echo '<span class="mr-2 d-none d-lg-inline text-gray-600 small">' . $fetch_profile['username'] . '</span>';
                                 } else {
                                     // Default text if no user profile is found
                                     echo '<span class="mr-2 d-none d-lg-inline text-gray-600 small">User</span>';
@@ -206,8 +174,6 @@ if (!isset($admin_id)) {
 
                 </nav>
                 <!-- End of Topbar -->
-
-
 
                 <div class="container-fluid">
 
@@ -279,112 +245,110 @@ if (!isset($admin_id)) {
                                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                                 <div class="modal-footer">
                                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                    <a class="btn btn-primary" href="../components/admin_logout.php">Logout</a>
+                                    <a class="btn btn-primary" href="../components/kasir_logout.php">Logout</a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-</body>
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-<script>
-    $(document).ready(function() {
-        $('.print-button').on('click', function() {
-            var orderId = $(this).data('id');
-            // console.log(orderId);
-            printReceipt(orderId);
-        });
-    });
+                <!-- jQuery -->
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    function printReceipt(orderId) {
-        $.ajax({
-            type: 'GET',
-            url: 'fetch_order_details.php',
-            data: {
-                id: orderId
-            },
-            dataType: 'json',
-            success: function(data) {
-                if (data.success) {
-                    var orderDetails = data.orderDetails;
+                <!-- Bootstrap JS -->
+                <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-                    var id = orderDetails.id;
-                    var placed_on = orderDetails.placed_on;
-                    var total_products = orderDetails.total_products;
-                    var total_price = orderDetails.total_price;
-                    var method = orderDetails.method;
+                <!-- Tambahkan skrip DataTable -->
+                <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 
-                    var params = {
-                        id: id,
-                        placed_on: placed_on,
-                        total_products: total_products,
-                        total_price: total_price,
-                        method: method,
-                    };
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+                <script src="https://cdn.datatables.net/v/dt/dt-1.13.8/datatables.min.js"></script>
 
-                    var url = 'struk_pembayaran.php?' + $.param(params);
-                    var newWindow = window.open(url, '_blank');
+                <script>
+                    $(document).ready(function() {
+                        $('#ordersTable').DataTable();
 
-                    newWindow.onload = function() {
-                        newWindow.print();
+                        $('.print-button').on('click', function() {
+                            var orderId = $(this).data('id');
+                            console.log(orderId);
+                            printReceipt(orderId);
 
-                        // Setelah mencetak, update status pesanan menjadi completed
-                        updateOrderStatus(orderId);
-                    };
-                    // Optionally, close the new window after printing
-                    newWindow.onafterprint = function() {
-                        newWindow.close();
-                    };
-                } else {
-                    alert('Failed to fetch order details. Please try again.');
-                }
-            },
-            error: function() {
-                alert('Failed to fetch order details. Please try again.');
-            }
-        });
-    }
+                        });
+                    });
 
-    // Fungsi untuk mengupdate status pesanan
-    function updateOrderStatus(orderId) {
-        $.ajax({
-            type: 'POST', // Ganti method menjadi POST
-            url: 'update_order_status.php', // Ganti nama file PHP sesuai kebutuhan
-            data: {
-                id: orderId,
-                status: 'Ready' // Set status pesanan menjadi completed
-            },
-            success: function(response) {
-                console.log(response); // Tampilkan response dari server
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', xhr.responseText);
-                alert('Failed to update order status. Please try again.');
-            }
-        });
-    }
-</script>
+                    function printReceipt(orderId) {
+                        $.ajax({
+                            type: 'GET',
+                            url: 'fetch_order_details.php',
+                            data: {
+                                id: orderId
+                            },
+                            dataType: 'json',
+                            success: function(data) {
+                                if (data.success) {
+                                    var orderDetails = data.orderDetails;
 
+                                    var id = orderId;
+                                    var placed_on = orderDetails.placed_on;
+                                    var total_products = orderDetails.total_products;
+                                    var total_price = orderDetails.total_price;
+                                    var method = orderDetails.method;
+                                    var kasir_id = orderDetails.kasir_id;
 
+                                    var params = {
+                                        id: id,
+                                        placed_on: placed_on,
+                                        total_products: total_products,
+                                        total_price: total_price,
+                                        method: method,
+                                        kasir_id: kasir_id,
+                                    };
+                                    // console.log(params);
 
-<!-- Bootstrap core JavaScript-->
-<script src="../vendor/jquery/jquery.min.js"></script>
-<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+                                    var url = 'struk_pembayaran.php?' + $.param(params);
+                                    // console.log(url);
+                                    var newWindow = window.open(url, '_blank');
 
-<!-- Core plugin JavaScript-->
-<script src="../vendor/jquery-easing/jquery.easing.min.js"></script>
+                                    newWindow.onload = function() {
+                                        newWindow.print();
 
-<!-- Custom scripts for all pages-->
-<script src="../js/sb-admin-2.min.js"></script>
+                                        // Setelah mencetak, update status pesanan menjadi completed
+                                        updateOrderStatus(orderId);
+                                    };
+                                    // Optionally, close the new window after printing
+                                    newWindow.onafterprint = function() {
+                                        newWindow.close();
+                                    };
+                                } else {
+                                    alert('Failed to fetch order details. Please try again.');
+                                }
+                            },
+                            error: function() {
+                                alert('Failed to fetch order details. Please try again.');
+                            }
+                        });
+                    }
 
-<!-- Page level plugins -->
-<script src="../vendor/chart.js/Chart.min.js"></script>
-
-<!-- Page level custom scripts -->
-<script src="../js/demo/chart-area-demo.js"></script>
-<script src="../js/demo/chart-pie-demo.js"></script>
+                    // Fungsi untuk mengupdate status pesanan
+                    function updateOrderStatus(orderId) {
+                        $.ajax({
+                            type: 'POST', // Ganti method menjadi POST
+                            url: 'update_order_status.php', // Ganti nama file PHP sesuai kebutuhan
+                            data: {
+                                id: orderId,
+                                status: 'Ready' // Set status pesanan menjadi completed
+                            },
+                            success: function(response) {
+                                console.log(response); // Tampilkan response dari server
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('AJAX Error:', xhr.responseText);
+                                alert('Failed to update order status. Please try again.');
+                            }
+                        });
+                    }
+                </script>
 
 </body>
 

@@ -10,16 +10,62 @@ if (!isset($kasir_id)) {
    exit();
 }
 
+// Fetching username from the kasir table
+$select_kasir = $conn->prepare("SELECT * FROM kasir WHERE kasir_id = ?");
+$select_kasir->execute([$kasir_id]);
+
+if ($select_kasir->rowCount() > 0) {
+   $fetch_kasir = $select_kasir->fetch(PDO::FETCH_ASSOC);
+   $kasir_username = $fetch_kasir['username'];
+} else {
+   // Default text if no user profile is found
+   $kasir_username = 'Unknown';
+}
+
 if (isset($_POST['cooking'])) {
    $order_id = $_POST['order_id'];
-   $update_status = $conn->prepare("UPDATE `orders` SET payment_status = 'cooking', kasir_id = ? WHERE id = ? AND payment_status = 'pending'");
-   $update_status->execute([$kasir_id, $order_id]);
-   $message[] = 'Order has ben cook and payment status updated!';
+   $update_status = $conn->prepare("UPDATE `orders` SET payment_status = 'cooking', kasir_id = ?, kasir_username = ? WHERE id = ? AND payment_status = 'pending'");
+   $update_status->execute([$kasir_id, $kasir_username, $order_id]);
+   $message[] = 'Order has been cooked, and payment status updated!';
+}
+
+if (isset($_POST['cancel'])) {
+   $order_id = $_POST['order_id'];
+
+   // Ambil user_id dari order
+   $select_order = $conn->prepare("SELECT user_id, total_price, method FROM `orders` WHERE id = ?");
+   $select_order->execute([$order_id]);
+   $order_details = $select_order->fetch(PDO::FETCH_ASSOC);
+   $user_id = $order_details['user_id'];
+   $total_price = $order_details['total_price'];
+   $payment_method = $order_details['method'];
+
+   // Validasi apakah metode pembayaran adalah 'saldo'
+   if ($payment_method === 'saldo') {
+      // Ambil saldo pengguna
+      $select_user_saldo = $conn->prepare("SELECT saldo FROM users WHERE id = ?");
+      $select_user_saldo->execute([$user_id]);
+      $user_saldo = $select_user_saldo->fetchColumn();
+
+      // Tambahkan total harga pesanan yang dibatalkan ke saldo pengguna
+      $new_saldo = $user_saldo + $total_price;
+
+      // Update saldo pengguna
+      $update_saldo = $conn->prepare("UPDATE users SET saldo = ? WHERE id = ?");
+      $update_saldo->execute([$new_saldo, $user_id]);
+   }
+
+   // Update status pembayaran menjadi 'cancel'
+   $update_status = $conn->prepare("UPDATE `orders` SET payment_status = 'cancel', kasir_id = ?, kasir_username = ? WHERE id = ? AND payment_status = 'pending'");
+   $update_status->execute([$kasir_id, $kasir_username, $order_id]);
+
+   $message[] = 'Order has been canceled, and payment status updated!';
 }
 
 
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -185,7 +231,6 @@ if (isset($_POST['cooking'])) {
             <!-- End of Topbar -->
 
             <div class="container-fluid">
-
                <div class="card shadow mb-4">
                   <div class="card-header py-3">
                      <div class="row align-items-center">
@@ -246,8 +291,9 @@ if (isset($_POST['cooking'])) {
                                     <td>
                                        <form action="" method="POST">
                                           <input type="hidden" name="order_id" value="<?= $id; ?>">
-                                          <div class="flex-btn">
-                                             <input type="submit" value="Cooking" class="btn btn-primary" name="cooking">
+                                          <div class="btn-group" role="group" aria-label="Order Actions">
+                                             <input type="submit" value="Cooking" class="btn btn-primary mr-2" name="cooking">
+                                             <input type="submit" value="Cancel" class="btn btn-danger" name="cancel">
                                           </div>
                                        </form>
                                     </td>
@@ -256,18 +302,12 @@ if (isset($_POST['cooking'])) {
                               }
                               ?>
                            </tbody>
-
-
                         </table>
                      </div>
                   </div>
-
                </div>
-
-
-
-
             </div>
+
             <!-- End of Main Content -->
 
             <!-- Footer -->

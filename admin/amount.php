@@ -9,22 +9,34 @@ $admin_id = $_SESSION['admin_id'];
 if (!isset($admin_id)) {
    header('location:admin_login.php');
 }
-// Fungsi deleteAdmin
-function deleteAdmin($conn, $admin_id)
-{
-   $delete_admin = $conn->prepare("DELETE FROM `admin` WHERE id = ?");
-   $delete_admin->execute([$admin_id]);
+
+if (isset($_GET['process'])) {
+   $id = $_GET['process'];
+
+   // Ambil data top up berdasarkan id
+   $queryTopUp = "SELECT * FROM top_up WHERE id = :id";
+   $stmtTopUp = $conn->prepare($queryTopUp);
+   $stmtTopUp->execute([':id' => $id]);
+   $topUpData = $stmtTopUp->fetch(PDO::FETCH_ASSOC);
+
+   // Ambil saldo yang ingin ditambahkan
+   $saldoToAdd = $topUpData['saldo'];
+   $userId = $topUpData['user_id'];
+
+   // Update saldo di tabel users
+   $queryUpdateSaldo = "UPDATE users SET saldo = COALESCE(saldo, 0) + :saldoToAdd WHERE id = :userId";
+   $stmtUpdateSaldo = $conn->prepare($queryUpdateSaldo);
+   $stmtUpdateSaldo->execute([':saldoToAdd' => $saldoToAdd, ':userId' => $userId]);
+
+   // Ubah status menjadi completed
+   $queryUpdateStatus = "UPDATE top_up SET status = 'completed' WHERE id = :id";
+   $stmtUpdateStatus = $conn->prepare($queryUpdateStatus);
+   $stmtUpdateStatus->execute([':id' => $id]);
+
+   // Redirect kembali ke halaman admin setelah proses selesai
+   header("Location: amount.php");
+   exit();
 }
-
-if (isset($_GET['delete'])) {
-   $delete_id = $_GET['delete'];
-
-   // Panggil fungsi deleteAdmin
-   deleteAdmin($conn, $delete_id);
-
-   header('location:admin_accounts.php');
-}
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,7 +49,7 @@ if (isset($_GET['delete'])) {
    <meta name="description" content="">
    <meta name="author" content="">
 
-   <title>Admin management</title>
+   <title>Amount user management</title>
 
    <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
@@ -67,7 +79,7 @@ if (isset($_GET['delete'])) {
          <hr class="sidebar-divider my-0">
 
          <!-- Nav Item - Pages Collapse Menu -->
-         <li class="nav-item active">
+         <li class="nav-item ">
             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
                <i class="fas fa-fw fa-users"></i>
                <span>Management Account</span>
@@ -114,7 +126,7 @@ if (isset($_GET['delete'])) {
          <hr class="sidebar-divider">
 
          <!-- Nav Item - Charts -->
-         <li class="nav-item">
+         <li class="nav-item active">
             <a class="nav-link" href="amount.php">
                <i class="fas fa-fw fa-file-alt"></i>
                <span>Amount</span></a>
@@ -226,11 +238,8 @@ if (isset($_GET['delete'])) {
                   <div class="card-header py-3">
                      <div class="row align-items-center">
                         <div class="col">
-                           <h6 class="m-0 font-weight-bold text-primary">Data Admin</h6>
+                           <h6 class="m-0 font-weight-bold text-primary">Data Saldo User</h6>
                         </div>
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addAdminModal">
-                           Tambah Admin
-                        </button>
                      </div>
                   </div>
                   <div class="card-body">
@@ -239,30 +248,43 @@ if (isset($_GET['delete'])) {
                            <thead>
                               <tr>
                                  <th>NO</th>
-                                 <th>Username</th>
+                                 <th>User Id</th>
+                                 <th>Saldo</th>
+                                 <th>Status</th>
                                  <th>Action</th>
                               </tr>
                            </thead>
                            <tbody>
                               <?php
-                              $query = "SELECT * FROM admin";
+                              $query = "SELECT * FROM top_up ORDER BY CASE WHEN status = 'pending' THEN 1 ELSE 2 END, status";
                               $stmt = $conn->query($query);
                               $no = 1;
 
                               while ($res1 = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                  $id = $res1['id'];
-                                 $username = $res1['name'];
+                                 $user_id = $res1['user_id'];
+                                 $saldo = $res1['saldo'];
+                                 $status = $res1['status'];
                               ?>
                                  <tr>
                                     <td><?php echo $no++ ?></td>
-                                    <td><?php echo $username ?></td>
+                                    <td><?php echo $user_id ?></td>
+                                    <td><?php echo $saldo ?></td>
+                                    <td><?php echo $status ?></td>
                                     <td>
-                                       <a href="?delete=<?= $id; ?>" class="btn btn-danger" onclick="return confirm('Delete this user and associated orders?');">Delete</a>
+                                       <?php if ($status === 'pending') : ?>
+                                          <!-- Mengubah link "delete" menjadi "process" -->
+                                          <a href="?process=<?= $id; ?>" class="btn btn-primary" onclick="return confirm('Process this top up?');">Process</a>
+                                       <?php else : ?>
+                                          <!-- Tombol akan disabled jika status sudah completed -->
+                                          <button class="btn btn-success" disabled>Completed</button>
+                                       <?php endif; ?>
                                     </td>
                                  </tr>
                               <?php
                               }
                               ?>
+
                            </tbody>
                         </table>
                      </div>
@@ -323,43 +345,6 @@ if (isset($_GET['delete'])) {
 </body>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-<!-- Script untuk auto-refresh setelah menutup modal -->
-<script>
-   $(document).ready(function() {
-      // Submit form menggunakan Ajax
-      $('#addAdminForm').submit(function(event) {
-         event.preventDefault();
-
-         // Ambil data dari form
-         var adminName = $('#adminName').val();
-         var adminPassword = $('#adminPassword').val();
-
-         // Kirim data ke backend (contoh: add_admin.php)
-         $.ajax({
-            type: 'POST',
-            url: 'register_admin.php',
-            data: {
-               adminName: adminName,
-               adminPassword: adminPassword
-            },
-            success: function(response) {
-               // Tampilkan pesan sukses atau error
-               alert(response);
-
-               // Tutup modal jika data berhasil ditambahkan
-               $('#addAdminModal').modal('hide');
-
-               // Auto-refresh halaman setelah menutup modal
-               location.reload();
-            },
-            error: function(error) {
-               console.log(error);
-               alert('Error! Gagal menambahkan admin.');
-            }
-         });
-      });
-   });
-</script>
 
 
 <!-- Bootstrap core JavaScript-->
@@ -372,12 +357,6 @@ if (isset($_GET['delete'])) {
 <!-- Custom scripts for all pages-->
 <script src="../js/sb-admin-2.min.js"></script>
 
-<!-- Page level plugins -->
-<script src="../vendor/chart.js/Chart.min.js"></script>
-
-<!-- Page level custom scripts -->
-<script src="../js/demo/chart-area-demo.js"></script>
-<script src="../js/demo/chart-pie-demo.js"></script>
 
 </body>
 

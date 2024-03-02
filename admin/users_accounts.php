@@ -103,10 +103,11 @@ if (!isset($admin_id)) {
 
          <!-- Nav Item - Charts -->
          <li class="nav-item">
-            <a class="nav-link" href="report.php">
+            <a class="nav-link" href="amount.php">
                <i class="fas fa-fw fa-file-alt"></i>
-               <span>Report</span></a>
+               <span>Amount</span></a>
          </li>
+
 
 
          <hr class="sidebar-divider d-none d-md-block">
@@ -208,96 +209,95 @@ if (!isset($admin_id)) {
 
 
 
-            <div class="container-fluid">
-
-               <!-- DataTales Example -->
-               <div class="card shadow mb-4">
-                  <div class="card-header py-3">
-                     <div class="row align-items-center">
-                        <div class="col">
-                           <h6 class="m-0 font-weight-bold text-primary">Data User</h6>
-                        </div>
+            <!-- DataTales Example -->
+            <div class="card shadow mb-4">
+               <div class="card-header py-3">
+                  <div class="row align-items-center">
+                     <div class="col">
+                        <h6 class="m-0 font-weight-bold text-primary">Data User</h6>
                      </div>
                   </div>
-                  <div class="card-body">
-                     <div class="table-responsive">
-                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                           <thead>
-                              <tr>
-                                 <th>NO</th>
-                                 <th>Email</th>
-                                 <th>Username</th>
-                                 <th>Number</th>
-                                 <th>Foto</th>
-                                 <th>Orders</th>
-                                 <th>Action</th>
-                              </tr>
-                           </thead>
-                           <tbody>
-                              <?php
-                              $query = "SELECT users.id, users.email, users.number, users.name, users.profile_picture, COUNT(orders.id) AS order_count
-      FROM users
-      LEFT JOIN orders ON users.id = orders.user_id
-      GROUP BY users.id, users.email, users.number, users.name, users.profile_picture";
-                              $stmt = $conn->query($query);
-                              $no = 1;
-
-                              while ($res1 = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                 $id = $res1['id'];
-                                 $email = $res1['email'];
-                                 $name = $res1['name'];
-                                 $number = $res1['number'];
-                                 $photo = $res1['profile_picture'];
-                                 $orderCount = $res1['order_count'];
-                              ?>
-                                 <tr>
-                                    <td><?php echo $no++ ?></td>
-                                    <td><?php echo $email ?></td>
-                                    <td><?php echo $name ?></td>
-                                    <td><?php echo $number ?></td>
-                                    <td>
-                                       <?php if (!empty($photo)) : ?>
-                                          <img src="../<?php echo $photo ?>" alt="" width="50" height="50">
-                                       <?php else : ?>
-                                          <img src="../users/blank.png" alt="" width="50" height="50">
-                                       <?php endif; ?>
-                                    </td>
-                                    <td><?php echo $orderCount ?></td>
-                                    <td><a href="users_accounts.php?delete=<?= $id; ?>" class="btn btn-danger" onclick="return confirm('Delete this user and associated orders?');">Delete</a></td>
-                                 </tr>
-                              <?php
-                              }
-                              ?>
-                           </tbody>
-
-
-                        </table>
-                     </div>
-                  </div>
-
                </div>
+               <div class="card-body">
+                  <div class="table-responsive">
+                     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                           <tr>
+                              <th>NO</th>
+                              <th>Email</th>
+                              <th>Username</th>
+                              <th>Number</th>
+                              <th>Foto</th>
+                              <th>Orders</th>
+                              <th>Saldo</th> <!-- Tambah kolom saldo -->
+                              <th>Action</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           <?php
+                           $query = "SELECT users.id, users.email, users.number, users.name, users.profile_picture, COUNT(orders.id) AS order_count, users.saldo
+                              FROM users
+                              LEFT JOIN orders ON users.id = orders.user_id
+                              GROUP BY users.id, users.email, users.number, users.name, users.profile_picture, users.saldo"; // Menambahkan users.saldo ke dalam query
+                           $stmt = $conn->query($query);
+                           $no = 1;
+
+                           while ($res1 = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                              $id = $res1['id'];
+                              $email = $res1['email'];
+                              $name = $res1['name'];
+                              $number = $res1['number'];
+                              $photo = $res1['profile_picture'];
+                              $orderCount = $res1['order_count'];
+                              $saldo = $res1['saldo']; // Mengambil nilai saldo dari hasil query
+                           ?>
+                              <tr>
+                                 <td><?php echo $no++ ?></td>
+                                 <td><?php echo $email ?></td>
+                                 <td><?php echo $name ?></td>
+                                 <td><?php echo $number ?></td>
+                                 <td>
+                                    <?php if (!empty($photo)) : ?>
+                                       <img src="../<?php echo $photo ?>" alt="" width="50" height="50">
+                                    <?php else : ?>
+                                       <img src="../users/blank.png" alt="" width="50" height="50">
+                                    <?php endif; ?>
+                                 </td>
+                                 <td><?php echo $orderCount ?></td>
+                                 <td>Rp <?php echo $saldo ?></td> <!-- Tampilkan saldo -->
+                                 <td><a href="users_accounts.php?delete=<?= $id; ?>" class="btn btn-danger" onclick="return confirm('Delete this user and associated orders?');">Delete</a></td>
+                              </tr>
+                           <?php
+                           }
+                           ?>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
 
 
 
-               <!-- Logout Modal-->
-               <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                  <div class="modal-dialog" role="document">
-                     <div class="modal-content">
-                        <div class="modal-header">
-                           <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                           <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                              <span aria-hidden="true">×</span>
-                           </button>
-                        </div>
-                        <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                        <div class="modal-footer">
-                           <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                           <a class="btn btn-primary" href="../components/admin_logout.php">Logout</a>
-                        </div>
+
+            <!-- Logout Modal-->
+            <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+               <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                     <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                           <span aria-hidden="true">×</span>
+                        </button>
+                     </div>
+                     <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                     <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-primary" href="../components/admin_logout.php">Logout</a>
                      </div>
                   </div>
                </div>
             </div>
+         </div>
 
 </body>
 

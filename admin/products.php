@@ -118,10 +118,11 @@ if (isset($_GET['delete'])) {
 
          <!-- Nav Item - Charts -->
          <li class="nav-item">
-            <a class="nav-link" href="report.php">
+            <a class="nav-link" href="amount.php">
                <i class="fas fa-fw fa-file-alt"></i>
-               <span>Report</span></a>
+               <span>Amount</span></a>
          </li>
+
 
          <hr class="sidebar-divider d-none d-md-block">
 
@@ -348,7 +349,7 @@ if (isset($_GET['delete'])) {
                      </div>
                      <div class="modal-body">
                         <!-- Update Product Form -->
-                        <form id="updateProductForm" action="process_update_product.php" method="post" enctype="multipart/form-data">
+                        <form id="updateProductForm" action="proses_update_products.php" method="post" enctype="multipart/form-data">
                            <input type="hidden" name="updateProductID" id="updateProductID">
                            <div class="form-group">
                               <label for="updateProductName">Product Name</label>
@@ -406,7 +407,12 @@ if (isset($_GET['delete'])) {
          </div>
 
 </body>
+<!-- Bootstrap core JavaScript-->
+<script src="../vendor/jquery/jquery.min.js"></script>
+<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
+<!-- Core plugin JavaScript-->
+<script src="../vendor/jquery-easing/jquery.easing.min.js"></script>
 
 <script>
    // Menambahkan event listener untuk setiap tombol "Update"
@@ -450,40 +456,38 @@ if (isset($_GET['delete'])) {
    });
 
    // Menambahkan event listener untuk tombol "Update" di dalam modal
-   document.getElementById('updateProductForm').addEventListener('submit', function(event) {
-      event.preventDefault();
+   // $('#updateProductForm').submit(function(event) {
+   //    event.preventDefault();
 
-      // Kirim permintaan AJAX untuk memproses pembaruan produk
-      $.ajax({
-         url: 'process_update_product.php',
-         method: 'POST',
-         data: new FormData(this),
-         contentType: false,
-         cache: false,
-         processData: false,
-         success: function(response) {
-            // Handle respons dari server
-            console.log(response);
-            // Tutup modal setelah berhasil diperbarui
-            $('#updateProductModal').modal('hide');
-            // Refresh halaman setelah berhasil diperbarui
-            location.reload(true);
-         },
-         error: function(error) {
-            console.error('Error updating product:', error);
-         }
-      });
-   });
+   //    // Serialize form data using jQuery
+   //    var formData = new FormData($(this)[0]);
+   //    console.log(formData);
+
+   //    $.ajax({
+   //       url: 'proses_update_products.php',
+   //       method: 'POST',
+   //       data: formData,
+   //       contentType: false,
+   //       cache: false,
+   //       processData: false,
+   //       success: function(response) {
+   //          // Handle response from the server
+   //          console.log(response);
+   //          // Close the modal after successful update
+   //          $('#updateProductModal').modal('hide');
+   //          // Refresh the page after successful update
+   //          // location.reload(true);
+   //       },
+   //       error: function(xhr, status, error) {
+   //          console.error('Error updating product:', error);
+   //       }
+   //    });
+   // });
 </script>
 
 
 
-<!-- Bootstrap core JavaScript-->
-<script src="../vendor/jquery/jquery.min.js"></script>
-<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-<!-- Core plugin JavaScript-->
-<script src="../vendor/jquery-easing/jquery.easing.min.js"></script>
 
 <!-- Custom scripts for all pages-->
 <script src="../js/sb-admin-2.min.js"></script>

@@ -62,7 +62,7 @@ include 'components/add_cart.php';
                   <a href="category.php?category=<?= $fetch_products['category']; ?>" class="cat"><?= $fetch_products['category']; ?></a>
                   <div class="name"><?= $fetch_products['name']; ?></div>
                   <div class="flex">
-                  <div class="price"><span>Rp </span><?= number_format($fetch_products['price'], 0, ',', '.'); ?><span>/-</span></div>
+                     <div class="price"><span>Rp </span><?= number_format($fetch_products['price'], 0, ',', '.'); ?><span>/-</span></div>
                      <input type="number" name="qty" id="qty" class="qty" value="1" min="1" max="99" maxlength="2">
                   </div>
                </form>
@@ -78,9 +78,9 @@ include 'components/add_cart.php';
 
    <?php include 'components/footer.php'; ?>
 
-   <div class="loader">
+   <!-- <div class="loader">
       <img src="images/loader.gif" alt="">
-   </div>
+   </div> -->
 
    <script src="js/script.js"></script>
 

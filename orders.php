@@ -119,6 +119,9 @@
                                                    case 'delivery':
                                                       $statusColor = 'green';
                                                       break;
+                                                   case 'cancel':
+                                                      $statusColor = 'red';
+                                                      break;
                                                    default:
                                                       $statusColor = 'black'; // You can set a default color for unknown status
                                                 }

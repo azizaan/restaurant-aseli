@@ -23,7 +23,7 @@ if (!isset($admin_id)) {
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Pembayaran</title>
+    <title>Laporan</title>
 
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
@@ -52,10 +52,8 @@ if (!isset($admin_id)) {
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
-
-
             <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
+            <li class="nav-item ">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
                     <i class="fas fa-fw fa-users"></i>
                     <span>Management Account</span>
@@ -94,7 +92,7 @@ if (!isset($admin_id)) {
             <hr class="sidebar-divider">
 
             <!-- Nav Item - Charts -->
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="pembayaran.php">
                     <i class="fas fa-fw fa-money-check"></i>
                     <span>Pembayaran</span></a>
@@ -102,13 +100,16 @@ if (!isset($admin_id)) {
             <hr class="sidebar-divider">
 
             <!-- Nav Item - Charts -->
-            <li class="nav-item">
+            <li class="nav-item ">
                 <a class="nav-link" href="amount.php">
                     <i class="fas fa-fw fa-file-alt"></i>
                     <span>Amount</span></a>
             </li>
-
-
+            <li class="nav-item active">
+                <a class="nav-link" href="laporan.php">
+                    <i class="fas fa-fw fa-file-alt"></i>
+                    <span>Laporan</span></a>
+            </li>
 
             <hr class="sidebar-divider d-none d-md-block">
 
@@ -211,161 +212,80 @@ if (!isset($admin_id)) {
 
                 <div class="container-fluid">
 
-                    <!-- DataTales Example -->
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <h6 class="m-0 font-weight-bold text-primary">Data Pembayaran</h6>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th>NO</th>
-                                            <th>ID Order</th>
-                                            <th>Nama Menu</th>
-                                            <th>Harga</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php
-                                        $select_orders = $conn->query("SELECT * FROM `orders` WHERE payment_status = 'cooking'");
-
-                                        if ($select_orders->rowCount() > 0) {
-                                            $no = 1;
-                                            while ($fetch_orders = $select_orders->fetch(PDO::FETCH_ASSOC)) {
-                                        ?>
-                                                <tr>
-                                                    <td><?php echo $no; ?></td>
-                                                    <td><?php echo $fetch_orders['id']; ?></td>
-                                                    <td><?php echo $fetch_orders['total_products']; ?></td>
-                                                    <td>Rp <?php echo number_format($fetch_orders['total_price'], 0, ',', '.'); ?></td>
-                                                    <td>
-                                                        <button class="btn btn-primary print-button" data-id="<?php echo $fetch_orders['id']; ?>">print</button>
-                                                    </td>
-                                                </tr>
-                                        <?php
-                                                $no++;
-                                            }
-                                        } else {
-                                            echo '<tr><td colspan="5" class="text-center">No orders placed yet!</td></tr>';
-                                        }
-                                        ?>
-                                    </tbody>
-
-                                </table>
-                            </div>
-                        </div>
-
+                    <h1 class="h3 mb-4 text-gray-800">Laporan</h1>
+                    <div class="form-group">
+                        <label for="bulan">Pilih Bulan:</label>
+                        <select class="form-control" id="bulan" name="bulan">
+                            <option value="01">Januari</option>
+                            <option value="02">Februari</option>
+                            <option value="03">Maret</option>
+                            <option value="04">April</option>
+                            <option value="05">Mei</option>
+                            <option value="06">Juni</option>
+                            <option value="07">Juli</option>
+                            <option value="08">Agustus</option>
+                            <option value="09">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Desember</option>
+                        </select>
                     </div>
+                    <button class="btn btn-primary" onclick="generateExcel()">Generate Excel</button>
+                    <button class="btn btn-primary" onclick="generatePDF()">Generate PDF</button>
+                </div>
 
 
 
-                    <!-- Logout Modal-->
-                    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">×</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                                <div class="modal-footer">
-                                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                    <a class="btn btn-primary" href="../components/admin_logout.php">Logout</a>
-                                </div>
+                <!-- Logout Modal-->
+                <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                                <a class="btn btn-primary" href="../components/admin_logout.php">Logout</a>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+            <!-- Modal -->
+            <div class="modal fade" id="addAdminModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Tambah Admin</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Form untuk menambah data admin -->
+                            <form id="addAdminForm">
+                                <div class="form-group">
+                                    <label for="adminName">Nama Admin</label>
+                                    <input type="text" class="form-control" id="adminName" name="adminName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="adminPassword">Password</label>
+                                    <input type="password" class="form-control" id="adminPassword" name="adminPassword" required>
+                                </div>
+                                <!-- ... (Tambah field sesuai kebutuhan) ... -->
+                                <button type="submit" class="btn btn-primary">Simpan</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
 </body>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-
-<script>
-    $(document).ready(function() {
-        $('.print-button').on('click', function() {
-            var orderId = $(this).data('id');
-            // console.log(orderId);
-            printReceipt(orderId);
-        });
-    });
-
-    function printReceipt(orderId) {
-        $.ajax({
-            type: 'GET',
-            url: 'fetch_order_details.php',
-            data: {
-                id: orderId
-            },
-            dataType: 'json',
-            success: function(data) {
-                if (data.success) {
-                    var orderDetails = data.orderDetails;
-
-                    var id = orderDetails.id;
-                    var placed_on = orderDetails.placed_on;
-                    var total_products = orderDetails.total_products;
-                    var total_price = orderDetails.total_price;
-                    var method = orderDetails.method;
-
-                    var params = {
-                        id: id,
-                        placed_on: placed_on,
-                        total_products: total_products,
-                        total_price: total_price,
-                        method: method,
-                    };
-
-                    var url = 'struk_pembayaran.php?' + $.param(params);
-                    var newWindow = window.open(url, '_blank');
-
-                    newWindow.onload = function() {
-                        newWindow.print();
-
-                        // Setelah mencetak, update status pesanan menjadi completed
-                        updateOrderStatus(orderId);
-                    };
-                    // Optionally, close the new window after printing
-                    newWindow.onafterprint = function() {
-                        newWindow.close();
-                    };
-                } else {
-                    alert('Failed to fetch order details. Please try again.');
-                }
-            },
-            error: function() {
-                alert('Failed to fetch order details. Please try again.');
-            }
-        });
-    }
-
-    // Fungsi untuk mengupdate status pesanan
-    function updateOrderStatus(orderId) {
-        $.ajax({
-            type: 'POST', // Ganti method menjadi POST
-            url: 'update_order_status.php', // Ganti nama file PHP sesuai kebutuhan
-            data: {
-                id: orderId,
-                status: 'Ready' // Set status pesanan menjadi completed
-            },
-            success: function(response) {
-                console.log(response); // Tampilkan response dari server
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', xhr.responseText);
-                alert('Failed to update order status. Please try again.');
-            }
-        });
-    }
-</script>
 
 
 
@@ -379,13 +299,17 @@ if (!isset($admin_id)) {
 <!-- Custom scripts for all pages-->
 <script src="../js/sb-admin-2.min.js"></script>
 
-<!-- Page level plugins -->
-<script src="../vendor/chart.js/Chart.min.js"></script>
+<script>
+    function generateExcel() {
+        var month = document.getElementById("bulan").value;
+        window.location.href = "generate_excel.php?bulan=" + month;
+    }
 
-<!-- Page level custom scripts -->
-<script src="../js/demo/chart-area-demo.js"></script>
-<script src="../js/demo/chart-pie-demo.js"></script>
-
+    function generatePDF() {
+        var month = document.getElementById("bulan").value;
+        window.location.href = "generate_pdf.php?bulan=" + month;
+    }
+</script>
 </body>
 
 </html>
