@@ -154,6 +154,7 @@ function getDailyChartData($conn)
                     <span>Amount</span></a>
             </li>
 
+            <hr class="sidebar-divider">
             <!-- Nav Item - laporan -->
             <li class="nav-item">
                 <a class="nav-link" href="laporan.php">

@@ -105,6 +105,9 @@ if (!isset($admin_id)) {
                     <i class="fas fa-fw fa-file-alt"></i>
                     <span>Amount</span></a>
             </li>
+
+            <hr class="sidebar-divider">
+
             <li class="nav-item active">
                 <a class="nav-link" href="laporan.php">
                     <i class="fas fa-fw fa-file-alt"></i>
@@ -213,25 +216,68 @@ if (!isset($admin_id)) {
                 <div class="container-fluid">
 
                     <h1 class="h3 mb-4 text-gray-800">Laporan</h1>
-                    <div class="form-group">
-                        <label for="bulan">Pilih Bulan:</label>
-                        <select class="form-control" id="bulan" name="bulan">
-                            <option value="01">Januari</option>
-                            <option value="02">Februari</option>
-                            <option value="03">Maret</option>
-                            <option value="04">April</option>
-                            <option value="05">Mei</option>
-                            <option value="06">Juni</option>
-                            <option value="07">Juli</option>
-                            <option value="08">Agustus</option>
-                            <option value="09">September</option>
-                            <option value="10">Oktober</option>
-                            <option value="11">November</option>
-                            <option value="12">Desember</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="bulan">Pilih Bulan:</label>
+                            <select class="form-control" id="bulan" name="bulan">
+                                <?php
+                                // Ambil nomor bulan saat ini
+                                $bulan_sekarang = date('m');
+
+                                // Daftar nama bulan dalam bahasa Indonesia
+                                $nama_bulan = [
+                                    '01' => 'Januari',
+                                    '02' => 'Februari',
+                                    '03' => 'Maret',
+                                    '04' => 'April',
+                                    '05' => 'Mei',
+                                    '06' => 'Juni',
+                                    '07' => 'Juli',
+                                    '08' => 'Agustus',
+                                    '09' => 'September',
+                                    '10' => 'Oktober',
+                                    '11' => 'November',
+                                    '12' => 'Desember'
+                                ];
+
+                                // Loop untuk menampilkan opsi bulan
+                                foreach ($nama_bulan as $nomor_bulan => $nama) {
+                                    // Tentukan apakah bulan ini adalah bulan yang dipilih saat ini
+                                    $selected = ($nomor_bulan == $bulan_sekarang) ? 'selected' : '';
+
+                                    // Tampilkan opsi bulan
+                                    echo "<option value=\"$nomor_bulan\" $selected>$nama</option>";
+                                }
+                                ?>
+
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="tahun">Pilih Tahun:</label>
+                            <select class="form-control" id="tahun" name="tahun">
+                                <?php
+                                // Ambil tahun saat ini
+                                $tahun_sekarang = date('Y');
+
+                                // Buat daftar tahun untuk 10 tahun ke depan dan 10 tahun ke belakang dari tahun saat ini
+                                $tahun_list = range($tahun_sekarang - 5, $tahun_sekarang + 5);
+
+                                // Loop untuk menampilkan setiap tahun dalam opsi dropdown
+                                foreach ($tahun_list as $tahun_option) {
+                                    // Tentukan apakah tahun ini adalah tahun yang dipilih sebelumnya
+                                    $selected = ($tahun_option == $tahun_sekarang) ? 'selected' : '';
+
+                                    // Tampilkan opsi tahun
+                                    echo "<option value=\"$tahun_option\" $selected>$tahun_option</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
                     </div>
-                    <button class="btn btn-primary" onclick="generateExcel()">Generate Excel</button>
-                    <button class="btn btn-primary" onclick="generatePDF()">Generate PDF</button>
+
+
+                    <button style="margin-top: 1rem;" class="btn btn-primary" onclick="generateExcel()">Generate Excel</button>
                 </div>
 
 
@@ -255,34 +301,7 @@ if (!isset($admin_id)) {
                     </div>
                 </div>
             </div>
-            <!-- Modal -->
-            <div class="modal fade" id="addAdminModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Tambah Admin</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <!-- Form untuk menambah data admin -->
-                            <form id="addAdminForm">
-                                <div class="form-group">
-                                    <label for="adminName">Nama Admin</label>
-                                    <input type="text" class="form-control" id="adminName" name="adminName" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="adminPassword">Password</label>
-                                    <input type="password" class="form-control" id="adminPassword" name="adminPassword" required>
-                                </div>
-                                <!-- ... (Tambah field sesuai kebutuhan) ... -->
-                                <button type="submit" class="btn btn-primary">Simpan</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
 </body>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
@@ -301,15 +320,12 @@ if (!isset($admin_id)) {
 
 <script>
     function generateExcel() {
-        var month = document.getElementById("bulan").value;
-        window.location.href = "generate_excel.php?bulan=" + month;
-    }
-
-    function generatePDF() {
-        var month = document.getElementById("bulan").value;
-        window.location.href = "generate_pdf.php?bulan=" + month;
+        var bulan = document.getElementById("bulan").value;
+        var tahun = document.getElementById("tahun").value;
+        window.location.href = "generate_excel.php?bulan=" + bulan + "&tahun=" + tahun;
     }
 </script>
+
 </body>
 
 </html>

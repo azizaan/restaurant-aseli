@@ -109,7 +109,13 @@ if (!isset($admin_id)) {
          </li>
 
 
-
+         <hr class="sidebar-divider">
+         <!-- Nav Item - laporan -->
+         <li class="nav-item">
+            <a class="nav-link" href="laporan.php">
+               <i class="fas fa-fw fa-file-alt"></i>
+               <span>Laporan</span></a>
+         </li>
 
 
          <!-- Divider -->
